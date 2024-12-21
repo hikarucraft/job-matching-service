@@ -1,0 +1,1835 @@
+openapi: 3.0.0
+info:
+  title: Job Portal API
+  description: |
+    応募者用のサインアップおよびログイン機能を提供するAPIです。ログイン後、JWTをCookieに保存し、次回以降のリクエストにそのJWTを送信して認証を行います。
+  version: 1.0.0
+
+paths:
+  /applicant/signup:
+    post:
+      summary: 応募者のサインアップ
+      description: 応募者が新規登録するためのエンドポイントです。サインアップが成功すると、JWTをCookieに設定します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicantSignup'
+            example:
+              email: "applicant@example.com"
+              password: "password123"
+              full_name: "応募者 太郎"
+      responses:
+        '201':
+          description: サインアップが成功しました
+          headers:
+            Set-Cookie:
+              description: JWTがCookieに保存されます
+              schema:
+                type: string
+                example: "jwt_token_example"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Applicant'
+              example:
+                uuid: "5a8c3b1a-24d2-49e5-a4ab-cf25c98eeb47"
+                email: "applicant@example.com"
+                full_name: "応募者 太郎"
+        '400':
+          description: リクエストが無効です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "入力された情報が無効です"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+
+  /applicant/login:
+    post:
+      summary: 応募者のログイン
+      description: 応募者がログインするためのエンドポイントです。ログインが成功すると、JWTをCookieに保存します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicantLogin'
+            example:
+              email: "applicant@example.com"
+              password: "password123"
+      responses:
+        '200':
+          description: ログインが成功しました
+          headers:
+            Set-Cookie:
+              description: JWTがCookieに保存されます
+              schema:
+                type: string
+                example: "jwt_token_example"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Applicant'
+              example:
+                uuid: "5a8c3b1a-24d2-49e5-a4ab-cf25c98eeb47"
+                email: "applicant@example.com"
+                full_name: "応募者 太郎"
+        '400':
+          description: メールアドレスまたはパスワードが無効です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効なメールアドレスまたはパスワードです"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+  /admin/invite:
+    post:
+      summary: 企業ユーザーの招待URLを発行
+      description: |
+        管理者（`admin_user`）が企業ユーザー（`company_user`）に登録URLを発行します。URLには一時的に有効なトークンが含まれています。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyUserInviteRequest'
+            example:
+              email: "company_user@example.com"
+      responses:
+        '200':
+          description: 招待URLが正常に発行されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUserInvite'
+              example:
+                invite_url: "https://example.com/invite?token=temporary-invite-token"
+        '400':
+          description: リクエストが無効です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効なリクエストです"
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "権限がありません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+  /company_user/register:
+    post:
+      summary: 企業ユーザーの登録
+      description: |
+        企業ユーザー（`company_user`）が管理者から送られた招待URLを使って登録を行います。
+        URLには一時的に有効なトークンが含まれています。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyUserRegister'
+            example:
+              invite_token: "temporary-invite-token"
+              email: "company_user@example.com"
+              password: "password123"
+              full_name: "企業ユーザー 太郎"
+      responses:
+        '201':
+          description: 登録が成功しました
+          headers:
+            Set-Cookie:
+              description: JWTがCookieに保存されます
+              schema:
+                type: string
+                example: "jwt_token_example"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUser'
+              example:
+                uuid: "c124adff-1234-5678-9101-abcdefabc123"
+                email: "company_user@example.com"
+                full_name: "企業ユーザー 太郎"
+        '400':
+          description: 無効な招待URLまたはリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効な招待トークンまたはリクエストです"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+
+  /company_user/create_company:
+    post:
+      summary: 企業ユーザーが会社を作成
+      description: |
+        企業ユーザー（`company_user`）がログイン後、自分の会社を作成します。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyCreateRequest'
+            example:
+              company_name: "株式会社ABC"
+              profile_image_url: "https://example.com/logo.png"
+              profile_text: "テクノロジー業界のリーディングカンパニーです"
+      responses:
+        '201':
+          description: 会社が作成されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+              example:
+                uuid: "1d6f8743-dc4c-47d1-95f1-2ab83246081c"
+                company_name: "株式会社ABC"
+                profile_image_url: "https://example.com/logo.png"
+                profile_text: "テクノロジー業界のリーディングカンパニーです"
+        '400':
+          description: リクエストが無効です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "会社情報が無効です"
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "権限がありません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+  /admin/company_user/{company_user_id}:
+    patch:
+      summary: 企業ユーザーの情報を編集
+      description: |
+        管理者（`admin_user`）が特定の企業ユーザー（`company_user`）の情報を編集します。
+        このリクエストには認証済みの`admin_user`のJWTを含むCookieが必要です。
+      parameters:
+        - name: company_user_id
+          in: path
+          required: true
+          description: 編集対象の企業ユーザーのUUID
+          schema:
+            type: string
+            example: "c124adff-1234-5678-9101-abcdefabc123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyUserUpdateRequest'
+            example:
+              email: "new_email@example.com"
+              full_name: "新しい名前"
+      responses:
+        '200':
+          description: 企業ユーザーの情報が正常に更新されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUser'
+              example:
+                uuid: "c124adff-1234-5678-9101-abcdefabc123"
+                email: "new_email@example.com"
+                full_name: "新しい名前"
+        '400':
+          description: 無効なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効なリクエストです"
+        '404':
+          description: 企業ユーザーが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された企業ユーザーが見つかりません"
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "権限がありません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+    delete:
+      summary: 企業ユーザーの削除
+      description: |
+        管理者（`admin_user`）が特定の企業ユーザー（`company_user`）を削除します。
+        このリクエストには認証済みの`admin_user`のJWTを含むCookieが必要です。
+      parameters:
+        - name: company_user_id
+          in: path
+          required: true
+          description: 削除対象の企業ユーザーのUUID
+          schema:
+            type: string
+            example: "c124adff-1234-5678-9101-abcdefabc123"
+      responses:
+        '204':
+          description: 削除が正常に完了しました（レスポンスボディなし）
+        '400':
+          description: 無効なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効なリクエストです"
+        '404':
+          description: 企業ユーザーが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された企業ユーザーが見つかりません"
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "権限がありません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+  /company/jobs:
+    get:
+      summary: 自分の会社に属する求人一覧を取得
+      description: |
+        認証された`company_user`が、自分の会社に属するすべての求人（`jobs`）を取得します。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      responses:
+        '200':
+          description: 求人一覧の取得に成功しました
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+              example:
+                - uuid: "job-123"
+                  job_name: "ソフトウェアエンジニア"
+                  description: "フルスタックエンジニアを募集しています"
+                  tag: ["エンジニア", "フルスタック"]
+                - uuid: "job-456"
+                  job_name: "プロダクトマネージャー"
+                  description: "プロダクトの戦略を立案できる方を募集"
+                  tag: ["マネジメント", "プロダクト"]
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証されていません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+    post:
+      summary: 自分の会社に新しい求人を作成
+      description: |
+        認証された`company_user`が、自分の会社に新しい求人を作成します。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobCreateRequest'
+            example:
+              job_name: "バックエンドエンジニア"
+              description: "スケーラブルなシステム設計に携わる"
+              tag: ["エンジニア", "バックエンド"]
+      responses:
+        '201':
+          description: 求人の作成に成功しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+              example:
+                uuid: "job-789"
+                job_name: "バックエンドエンジニア"
+                description: "スケーラブルなシステム設計に携わる"
+                tag: ["エンジニア", "バックエンド"]
+        '400':
+          description: 無効なリクエストです
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効なリクエストです"
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証されていません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+
+  /company/jobs/{job_id}:
+    get:
+      summary: 自分の会社に属する求人の詳細を取得
+      description: |
+        認証された`company_user`が、自分の会社に属する特定の求人（`job`）の詳細を取得します。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          description: 詳細を取得する求人のUUID
+          schema:
+            type: string
+            example: "job-123"
+      responses:
+        '200':
+          description: 求人の詳細取得に成功しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+              example:
+                uuid: "job-123"
+                job_name: "ソフトウェアエンジニア"
+                description: "フルスタックエンジニアを募集しています"
+                tag: ["エンジニア", "フルスタック"]
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証されていません"
+        '404':
+          description: 求人が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された求人が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+    patch:
+      summary: 自分の会社の求人を編集
+      description: |
+        認証された`company_user`が、自分の会社に属する特定の求人を編集します。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          description: 編集する求人のUUID
+          schema:
+            type: string
+            example: "job-123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobUpdateRequest'
+            example:
+              job_name: "更新後のバックエンドエンジニア"
+              description: "新しいスキル要件を追加しました"
+              tag: ["エンジニア", "バックエンド", "更新"]
+      responses:
+        '200':
+          description: 求人の編集に成功しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+              example:
+                uuid: "job-123"
+                job_name: "更新後のバックエンドエンジニア"
+                description: "新しいスキル要件を追加しました"
+                tag: ["エンジニア", "バックエンド", "更新"]
+        '400':
+          description: 無効なリクエストです
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効なリクエストです"
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証されていません"
+        '404':
+          description: 求人が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された求人が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+    delete:
+      summary: 自分の会社の求人を削除
+      description: |
+        認証された`company_user`が、自分の会社に属する特定の求人を削除します。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          description: 削除する求人のUUID
+          schema:
+            type: string
+            example: "job-123"
+      responses:
+        '204':
+          description: 求人が正常に削除されました（レスポンスボディなし）
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証されていません"
+        '404':
+          description: 求人が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された求人が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+  /company:
+    patch:
+      summary: 所属する会社情報を編集
+      description: |
+        認証された`company_user`が、自分が所属する会社の情報を編集します。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyUpdateRequest'
+            example:
+              company_name: "新しい会社名"
+              profile_image_url: "https://example.com/new-image.jpg"
+              profile_text: "新しい会社の紹介文"
+      responses:
+        '200':
+          description: 会社情報の編集に成功しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+              example:
+                uuid: "company-123"
+                company_name: "新しい会社名"
+                profile_image_url: "https://example.com/new-image.jpg"
+                profile_text: "新しい会社の紹介文"
+        '400':
+          description: 無効なリクエストです
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効なリクエストです"
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証されていません"
+        '404':
+          description: 会社情報が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された会社情報が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+    delete:
+      summary: 所属する会社を削除
+      description: |
+        認証された`company_user`が、自分が所属する会社を削除します。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      responses:
+        '204':
+          description: 会社が正常に削除されました（レスポンスボディなし）
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証されていません"
+        '404':
+          description: 会社情報が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された会社情報が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+        
+  /scouts:
+    post:
+      summary: スカウトを送信
+      description: |
+        認証された`company_user`が、指定された`applicant`にスカウトを送信します。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoutCreateRequest'
+            example:
+              applicant_id: "applicant-456"
+              message: "ぜひ一緒に働いていただきたいです！"
+      responses:
+        '201':
+          description: スカウトの送信に成功しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scout'
+              example:
+                uuid: "scout-789"
+                applicant_id: "applicant-456"
+                company_id: "company-123"
+                message: "ぜひ一緒に働いていただきたいです！"
+                sent_at: "2024-12-22T10:00:00Z"
+        '400':
+          description: 無効なリクエストです
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効なリクエストです"
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証されていません"
+        '404':
+          description: 指定された応募者が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された応募者が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+  /scouts/{scout_id}:
+    delete:
+      summary: スカウトをキャンセル
+      description: |
+        認証された`company_user`が、指定されたスカウトをキャンセルします。
+        このリクエストには認証済みのJWTを含むCookieが必要です。
+      parameters:
+        - name: scout_id
+          in: path
+          required: true
+          description: キャンセルするスカウトのUUID
+          schema:
+            type: string
+            example: "scout-789"
+      responses:
+        '204':
+          description: スカウトが正常にキャンセルされました（レスポンスボディなし）
+        '403':
+          description: 認証されていない、または権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証されていません"
+        '404':
+          description: 指定されたスカウトが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定されたスカウトが見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+  /jobs:
+    get:
+      summary: 求人一覧の取得
+      description: |
+        公開されている求人一覧を取得します。
+        クエリパラメータを使用して検索条件を指定することができます。
+        このリクエストには認証は不要です。
+      parameters:
+        - name: job_name
+          in: query
+          required: false
+          description: 求人名でフィルタリング
+          schema:
+            type: string
+            example: "エンジニア"
+        - name: tag
+          in: query
+          required: false
+          description: 求人のタグでフィルタリング
+          schema:
+            type: string
+            example: "リモート"
+        - name: limit
+          in: query
+          required: false
+          description: 取得するデータの上限
+          schema:
+            type: integer
+            example: 10
+        - name: offset
+          in: query
+          required: false
+          description: 取得を開始する位置
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: 求人一覧の取得に成功しました
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+              example:
+                - uuid: "job-123"
+                  job_name: "フロントエンドエンジニア"
+                  description: "フロントエンド開発に特化したエンジニアを募集しています。"
+                  tag: "リモート, JavaScript"
+                - uuid: "job-456"
+                  job_name: "バックエンドエンジニア"
+                  description: "スケーラブルなバックエンド開発を担当します。"
+                  tag: "Python, AWS"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+
+  /jobs/{job_id}:
+    get:
+      summary: 求人詳細の取得
+      description: |
+        指定された求人の詳細情報を取得します。
+        このリクエストには認証は不要です。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          description: 詳細を取得する求人のUUID
+          schema:
+            type: string
+            example: "job-123"
+      responses:
+        '200':
+          description: 求人詳細の取得に成功しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+              example:
+                uuid: "job-123"
+                job_name: "フロントエンドエンジニア"
+                description: "フロントエンド開発に特化したエンジニアを募集しています。"
+                tag: "リモート, JavaScript"
+        '404':
+          description: 求人が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された求人が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+
+  /companies:
+    get:
+      summary: 企業一覧の取得
+      description: |
+        公開されている企業一覧を取得します。
+        クエリパラメータを使用して検索条件を指定することができます。
+        このリクエストには認証は不要です。
+      parameters:
+        - name: company_name
+          in: query
+          required: false
+          description: 会社名でフィルタリング
+          schema:
+            type: string
+            example: "株式会社サンプル"
+        - name: limit
+          in: query
+          required: false
+          description: 取得するデータの上限
+          schema:
+            type: integer
+            example: 10
+        - name: offset
+          in: query
+          required: false
+          description: 取得を開始する位置
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: 企業一覧の取得に成功しました
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Company'
+              example:
+                - uuid: "company-123"
+                  company_name: "株式会社サンプル"
+                  profile_image_url: "https://example.com/image.jpg"
+                  profile_text: "我々は革新的な技術を提供しています。"
+                - uuid: "company-456"
+                  company_name: "Tech Corp"
+                  profile_image_url: "https://example.com/techcorp.jpg"
+                  profile_text: "次世代のソリューションを開発しています。"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+
+  /companies/{company_id}:
+    get:
+      summary: 企業詳細の取得
+      description: |
+        指定された企業の詳細情報を取得します。
+        このリクエストには認証は不要です。
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          description: 詳細を取得する企業のUUID
+          schema:
+            type: string
+            example: "company-123"
+      responses:
+        '200':
+          description: 企業詳細の取得に成功しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+              example:
+                uuid: "company-123"
+                company_name: "株式会社サンプル"
+                profile_image_url: "https://example.com/image.jpg"
+                profile_text: "我々は革新的な技術を提供しています。"
+        '404':
+          description: 企業が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された企業が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+  /applicant/scouts:
+    get:
+      summary: 受け取ったスカウト一覧の取得
+      description: |
+        認証された`applicant_user`が、受け取ったスカウト一覧を取得します。
+        クエリパラメータを使用して検索条件を指定することができます。
+        このリクエストにはJWTを含むCookieが必要です。
+      parameters:
+        - name: company_name
+          in: query
+          required: false
+          description: 企業名でフィルタリング
+          schema:
+            type: string
+            example: "株式会社サンプル"
+        - name: job_name
+          in: query
+          required: false
+          description: 求人名でフィルタリング
+          schema:
+            type: string
+            example: "フロントエンドエンジニア"
+        - name: status
+          in: query
+          required: false
+          description: スカウトのステータスでフィルタリング（例 "送信済み", "拒否"）
+          schema:
+            type: string
+            example: "送信済み"
+        - name: limit
+          in: query
+          required: false
+          description: 取得するデータの上限
+          schema:
+            type: integer
+            example: 10
+        - name: offset
+          in: query
+          required: false
+          description: 取得を開始する位置
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: スカウト一覧の取得に成功しました
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scout'
+              example:
+                - uuid: "scout-123"
+                  company_id: "company-123"
+                  job_id: "job-456"
+                  message: "ぜひ一緒に働いていただきたいです！"
+                  sent_at: "2024-12-22T10:00:00Z"
+                  status: "送信済み"
+                - uuid: "scout-456"
+                  company_id: "company-456"
+                  job_id: "job-789"
+                  message: "あなたのスキルを活かせるポジションです！"
+                  sent_at: "2024-12-21T09:00:00Z"
+                  status: "拒否"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+  /applicant/scouts/{scout_id}:
+    get:
+      summary: スカウト詳細の取得
+      description: |
+        認証された`applicant_user`が、指定されたスカウトの詳細情報を取得します。
+        このリクエストにはJWTを含むCookieが必要です。
+      parameters:
+        - name: scout_id
+          in: path
+          required: true
+          description: 詳細を取得するスカウトのUUID
+          schema:
+            type: string
+            example: "scout-123"
+      responses:
+        '200':
+          description: スカウト詳細の取得に成功しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scout'
+              example:
+                uuid: "scout-123"
+                company_id: "company-123"
+                job_id: "job-456"
+                message: "ぜひ一緒に働いていただきたいです！"
+                sent_at: "2024-12-22T10:00:00Z"
+                status: "送信済み"
+        '404':
+          description: スカウトが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定されたスカウトが見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+  /scouts/{scout_id}/reject:
+    post:
+      summary: スカウトを拒否
+      description: |
+        認証された`applicant_user`が、指定されたスカウトを拒否します。
+        このリクエストにはJWTを含むCookieが必要です。
+      parameters:
+        - name: scout_id
+          in: path
+          required: true
+          description: 拒否するスカウトのUUID
+          schema:
+            type: string
+            example: "scout-123"
+      responses:
+        '200':
+          description: スカウトが正常に拒否されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scout'
+              example:
+                uuid: "scout-123"
+                company_id: "company-123"
+                job_id: "job-456"
+                message: "ぜひ一緒に働いていただきたいです！"
+                sent_at: "2024-12-22T10:00:00Z"
+                status: "拒否"
+        '404':
+          description: スカウトが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定されたスカウトが見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+  /jobs/{job_id}/apply:
+    post:
+      summary: 求人に応募する
+      description: |
+        認証された`applicant_user`が、指定された求人に応募します。
+        このリクエストには、JWTを含むCookieを送信する必要があります。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          description: 応募する求人のUUID
+          schema:
+            type: string
+            example: "job-123"
+      responses:
+        '200':
+          description: 応募が正常に完了しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+              example:
+                uuid: "application-123"
+                job_id: "job-123"
+                applicant_id: "applicant-123"
+                status: "応募済み"
+                applied_at: "2024-12-22T10:00:00Z"
+        '404':
+          description: 求人が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された求人が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+  /jobs/{job_id}/apply/cancel:
+    post:
+      summary: 求人への応募をキャンセルする
+      description: |
+        認証された`applicant_user`が、指定された求人への応募をキャンセルします。
+        このリクエストには、JWTを含むCookieを送信する必要があります。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          description: キャンセルする求人のUUID
+          schema:
+            type: string
+            example: "job-123"
+      responses:
+        '200':
+          description: 応募が正常にキャンセルされました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+              example:
+                uuid: "application-123"
+                job_id: "job-123"
+                applicant_id: "applicant-123"
+                status: "キャンセル済み"
+                applied_at: "2024-12-22T10:00:00Z"
+        '404':
+          description: 求人が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された求人が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+  /applicant/profile:
+    get:
+      summary: 自分のプロフィールを閲覧する
+      description: |
+        認証された`applicant_user`が自分のプロフィールを閲覧します。
+        このリクエストには、JWTを含むCookieを送信する必要があります。
+      responses:
+        '200':
+          description: プロフィールが正常に取得されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicantProfile'
+              example:
+                uuid: "applicant-123"
+                first_name: "Taro"
+                last_name: "Yamada"
+                email: "taro@example.com"
+                phone: "080-1234-5678"
+                address: "Tokyo, Japan"
+                profile_image_url: "https://example.com/images/profile.jpg"
+        '401':
+          description: 認証されていないユーザー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証に失敗しました。ログインしてください。"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+
+    put:
+      summary: 自分のプロフィールを編集する
+      description: |
+        認証された`applicant_user`が自分のプロフィールを編集します。
+        このリクエストには、JWTを含むCookieを送信する必要があります。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicantProfile'
+            example:
+              first_name: "Taro"
+              last_name: "Yamada"
+              email: "newemail@example.com"
+              phone: "080-8765-4321"
+              address: "Osaka, Japan"
+              profile_image_url: "https://example.com/images/new_profile.jpg"
+      responses:
+        '200':
+          description: プロフィールが正常に更新されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicantProfile'
+              example:
+                uuid: "applicant-123"
+                first_name: "Taro"
+                last_name: "Yamada"
+                email: "newemail@example.com"
+                phone: "080-8765-4321"
+                address: "Osaka, Japan"
+                profile_image_url: "https://example.com/images/new_profile.jpg"
+        '400':
+          description: リクエストデータが無効です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "無効な入力データがあります。"
+        '401':
+          description: 認証されていないユーザー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証に失敗しました。ログインしてください。"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+  /company/applicants:
+    get:
+      summary: 自分の会社に応募している応募者の一覧を取得する
+      description: |
+        認証された`company_user`が、自分の会社に応募している`applicant`の一覧を取得します。
+        検索や絞り込みも可能です。
+        このリクエストには、JWTを含むCookieを送信する必要があります。
+      parameters:
+        - name: job_id
+          in: query
+          description: 求人のIDで絞り込み
+          required: false
+          schema:
+            type: string
+            example: "job-123"
+        - name: status
+          in: query
+          description: 応募の状態で絞り込み（例：応募済み、拒否）
+          required: false
+          schema:
+            type: string
+            enum: ["applied", "rejected", "interviewed"]
+            example: "applied"
+        - name: limit
+          in: query
+          description: 結果の最大件数
+          required: false
+          schema:
+            type: integer
+            default: 10
+            example: 10
+        - name: offset
+          in: query
+          description: 結果のオフセット
+          required: false
+          schema:
+            type: integer
+            default: 0
+            example: 0
+      responses:
+        '200':
+          description: 応募者の一覧が正常に取得されました
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  applicants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApplicantProfile'
+                  total:
+                    type: integer
+                    description: 全応募者数
+                    example: 50
+              example:
+                applicants:
+                  - uuid: "applicant-123"
+                    first_name: "Taro"
+                    last_name: "Yamada"
+                    email: "taro@example.com"
+                    phone: "080-1234-5678"
+                    address: "Tokyo, Japan"
+                    profile_image_url: "https://example.com/images/profile.jpg"
+                  - uuid: "applicant-124"
+                    first_name: "Jiro"
+                    last_name: "Sato"
+                    email: "jiro@example.com"
+                    phone: "080-9876-5432"
+                    address: "Osaka, Japan"
+                    profile_image_url: "https://example.com/images/profile2.jpg"
+                total: 50
+        '401':
+          description: 認証されていないユーザー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証に失敗しました。ログインしてください。"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+  /company/applicants/{applicant_id}/profile:
+    get:
+      summary: 応募者のプロフィールを表示する
+      description: |
+        認証された`company_user`が、特定の`applicant`のプロフィールを表示します。
+        このリクエストには、JWTを含むCookieを送信する必要があります。
+      parameters:
+        - name: applicant_id
+          in: path
+          required: true
+          description: 応募者のUUID
+          schema:
+            type: string
+            example: "applicant-123"
+      responses:
+        '200':
+          description: 応募者のプロフィールが正常に取得されました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicantProfile'
+              example:
+                uuid: "applicant-123"
+                first_name: "Taro"
+                last_name: "Yamada"
+                email: "taro@example.com"
+                phone: "080-1234-5678"
+                address: "Tokyo, Japan"
+                profile_image_url: "https://example.com/images/profile.jpg"
+        '401':
+          description: 認証されていないユーザー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "認証に失敗しました。ログインしてください。"
+        '404':
+          description: 応募者が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "指定された応募者が見つかりません"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "サーバー内部でエラーが発生しました"
+      security:
+        - cookieAuth: []
+components:
+  schemas:
+    ApplicantSignup:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "applicant@example.com"
+        password:
+          type: string
+          example: "password123"
+        full_name:
+          type: string
+          example: "応募者 太郎"
+
+    ApplicantLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "applicant@example.com"
+        password:
+          type: string
+          example: "password123"
+
+    Applicant:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: "5a8c3b1a-24d2-49e5-a4ab-cf25c98eeb47"
+        email:
+          type: string
+          example: "applicant@example.com"
+        full_name:
+          type: string
+          example: "応募者 太郎"
+          
+    CompanyUserInviteRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "company_user@example.com"
+
+    CompanyUserInvite:
+      type: object
+      properties:
+        invite_url:
+          type: string
+          example: "https://example.com/invite?token=temporary-invite-token"
+
+    CompanyUserRegister:
+      type: object
+      properties:
+        invite_token:
+          type: string
+          example: "temporary-invite-token"
+        email:
+          type: string
+          example: "company_user@example.com"
+        password:
+          type: string
+          example: "password123"
+        full_name:
+          type: string
+          example: "企業ユーザー 太郎"
+
+    CompanyUser:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: "c124adff-1234-5678-9101-abcdefabc123"
+        email:
+          type: string
+          example: "company_user@example.com"
+        full_name:
+          type: string
+          example: "企業ユーザー 太郎"
+
+    CompanyCreateRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+          example: "株式会社ABC"
+        profile_image_url:
+          type: string
+          example: "https://example.com/logo.png"
+        profile_text:
+          type: string
+          example: "テクノロジー業界のリーディングカンパニーです"
+
+    Company:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: "1d6f8743-dc4c-47d1-95f1-2ab83246081c"
+        company_name:
+          type: string
+          example: "株式会社ABC"
+        profile_image_url:
+          type: string
+          example: "https://example.com/logo.png"
+        profile_text:
+          type: string
+          example: "テクノロジー業界のリーディングカンパニーです"
+    CompanyUpdateRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+          description: 会社の名前
+        profile_image_url:
+          type: string
+          description: 会社のプロフィール画像URL
+        profile_text:
+          type: string
+          description: 会社の紹介文
+
+          
+    CompanyUserUpdateRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: 更新後のメールアドレス
+          example: "new_email@example.com"
+        full_name:
+          type: string
+          description: 更新後の名前
+          example: "新しい名前"
+    Job:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: 求人の一意なID
+          example: "job-123"
+        job_name:
+          type: string
+          description: 求人の名称
+          example: "バックエンドエンジニア"
+        description:
+          type: string
+          description: 求人の詳細な説明
+          example: "スケーラブルなシステム設計に携わる"
+        tag:
+          type: array
+          items:
+            type: string
+          description: 求人に関連付けられたタグ
+          example: ["エンジニア", "バックエンド"]
+    JobCreateRequest:
+      type: object
+      properties:
+        job_name:
+          type: string
+          description: 求人の名称
+        description:
+          type: string
+          description: 求人の詳細な説明
+        tag:
+          type: array
+          items:
+            type: string
+          description: 求人に関連付けられたタグ
+    JobUpdateRequest:
+      type: object
+      properties:
+        job_name:
+          type: string
+          description: 求人の名称
+        description:
+          type: string
+          description: 求人の詳細な説明
+        tag:
+          type: array
+          items:
+            type: string
+          description: 求人に関連付けられたタグ
+ 
+    Scout:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: スカウトの一意なID
+          example: "scout-789"
+        applicant_id:
+          type: string
+          description: スカウト対象の応募者ID
+          example: "applicant-456"
+        company_id:
+          type: string
+          description: スカウトを送信した会社ID
+          example: "company-123"
+        message:
+          type: string
+          description: スカウトに含まれるメッセージ
+          example: "ぜひ一緒に働いていただきたいです！"
+        sent_at:
+          type: string
+          format: date-time
+          description: スカウトが送信された日時
+          example: "2024-12-22T10:00:00Z"
+    ScoutCreateRequest:
+      type: object
+      properties:
+        applicant_id:
+          type: string
+          description: スカウト対象の応募者ID
+        message:
+          type: string
+          description: スカウトに含まれるメッセージ
+    Application:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: 応募の一意なID
+          example: "application-123"
+        job_id:
+          type: string
+          description: 求人のUUID
+          example: "job-123"
+        applicant_id:
+          type: string
+          description: 応募者のUUID
+          example: "applicant-123"
+        status:
+          type: string
+          description: 応募の状態（応募済み, キャンセル済み）
+          example: "応募済み"
+        applied_at:
+          type: string
+          format: date-time
+          description: 応募日時
+          example: "2024-12-22T10:00:00Z"
+    ApplicantProfile:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: 応募者の一意なID
+          example: "applicant-123"
+        first_name:
+          type: string
+          description: 応募者の名前（名）
+          example: "Taro"
+        last_name:
+          type: string
+          description: 応募者の名前（姓）
+          example: "Yamada"
+        email:
+          type: string
+          description: 応募者のメールアドレス
+          example: "taro@example.com"
+        phone:
+          type: string
+          description: 応募者の電話番号
+          example: "080-1234-5678"
+        address:
+          type: string
+          description: 応募者の住所
+          example: "Tokyo, Japan"
+        profile_image_url:
+          type: string
+          description: プロフィール画像のURL
+          example: "https://example.com/images/profile.jpg"
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "無効なリクエストです"
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt_token

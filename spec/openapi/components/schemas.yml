@@ -1,0 +1,283 @@
+ApplicantSignup:
+  type: object
+  properties:
+    email:
+      type: string
+      example: "applicant@example.com"
+    password:
+      type: string
+      example: "password123"
+    full_name:
+      type: string
+      example: "応募者 太郎"
+
+ApplicantLogin:
+  type: object
+  properties:
+    email:
+      type: string
+      example: "applicant@example.com"
+    password:
+      type: string
+      example: "password123"
+
+Applicant:
+  type: object
+  properties:
+    uuid:
+      type: string
+      example: "5a8c3b1a-24d2-49e5-a4ab-cf25c98eeb47"
+    email:
+      type: string
+      example: "applicant@example.com"
+    full_name:
+      type: string
+      example: "応募者 太郎"
+      
+CompanyUserInviteRequest:
+  type: object
+  properties:
+    email:
+      type: string
+      example: "company_user@example.com"
+
+CompanyUserInvite:
+  type: object
+  properties:
+    invite_url:
+      type: string
+      example: "https://example.com/invite?token=temporary-invite-token"
+
+CompanyUserRegister:
+  type: object
+  properties:
+    invite_token:
+      type: string
+      example: "temporary-invite-token"
+    email:
+      type: string
+      example: "company_user@example.com"
+    password:
+      type: string
+      example: "password123"
+    full_name:
+      type: string
+      example: "企業ユーザー 太郎"
+
+CompanyUser:
+  type: object
+  properties:
+    uuid:
+      type: string
+      example: "c124adff-1234-5678-9101-abcdefabc123"
+    email:
+      type: string
+      example: "company_user@example.com"
+    full_name:
+      type: string
+      example: "企業ユーザー 太郎"
+
+CompanyCreateRequest:
+  type: object
+  properties:
+    company_name:
+      type: string
+      example: "株式会社ABC"
+    profile_image_url:
+      type: string
+      example: "https://example.com/logo.png"
+    profile_text:
+      type: string
+      example: "テクノロジー業界のリーディングカンパニーです"
+
+Company:
+  type: object
+  properties:
+    uuid:
+      type: string
+      example: "1d6f8743-dc4c-47d1-95f1-2ab83246081c"
+    company_name:
+      type: string
+      example: "株式会社ABC"
+    profile_image_url:
+      type: string
+      example: "https://example.com/logo.png"
+    profile_text:
+      type: string
+      example: "テクノロジー業界のリーディングカンパニーです"
+
+CompanyUpdateRequest:
+  type: object
+  properties:
+    company_name:
+      type: string
+      description: 会社の名前
+    profile_image_url:
+      type: string
+      description: 会社のプロフィール画像URL
+    profile_text:
+      type: string
+      description: 会社の紹介文
+      
+CompanyUserUpdateRequest:
+  type: object
+  properties:
+    email:
+      type: string
+      description: 更新後のメールアドレス
+      example: "new_email@example.com"
+    full_name:
+      type: string
+      description: 更新後の名前
+      example: "新しい名前"
+
+Job:
+  type: object
+  properties:
+    uuid:
+      type: string
+      description: 求人の一意なID
+      example: "job-123"
+    job_name:
+      type: string
+      description: 求人の名称
+      example: "バックエンドエンジニア"
+    description:
+      type: string
+      description: 求人の詳細な説明
+      example: "スケーラブルなシステム設計に携わる"
+    tag:
+      type: array
+      items:
+        type: string
+      description: 求人に関連付けられたタグ
+      example: ["エンジニア", "バックエンド"]
+
+JobCreateRequest:
+  type: object
+  properties:
+    job_name:
+      type: string
+      description: 求人の名称
+    description:
+      type: string
+      description: 求人の詳細な説明
+    tag:
+      type: array
+      items:
+        type: string
+      description: 求人に関連付けられたタグ
+
+JobUpdateRequest:
+  type: object
+  properties:
+    job_name:
+      type: string
+      description: 求人の名称
+    description:
+      type: string
+      description: 求人の詳細な説明
+    tag:
+      type: array
+      items:
+        type: string
+      description: 求人に関連付けられたタグ
+
+Scout:
+  type: object
+  properties:
+    uuid:
+      type: string
+      description: スカウトの一意なID
+      example: "scout-789"
+    applicant_id:
+      type: string
+      description: スカウト対象の応募者ID
+      example: "applicant-456"
+    company_id:
+      type: string
+      description: スカウトを送信した会社ID
+      example: "company-123"
+    message:
+      type: string
+      description: スカウトに含まれるメッセージ
+      example: "ぜひ一緒に働いていただきたいです！"
+    sent_at:
+      type: string
+      format: date-time
+      description: スカウトが送信された日時
+      example: "2024-12-22T10:00:00Z"
+
+ScoutCreateRequest:
+  type: object
+  properties:
+    applicant_id:
+      type: string
+      description: スカウト対象の応募者ID
+    message:
+      type: string
+      description: スカウトに含まれるメッセージ
+
+Application:
+  type: object
+  properties:
+    uuid:
+      type: string
+      description: 応募の一意なID
+      example: "application-123"
+    job_id:
+      type: string
+      description: 求人のUUID
+      example: "job-123"
+    applicant_id:
+      type: string
+      description: 応募者のUUID
+      example: "applicant-123"
+    status:
+      type: string
+      description: 応募の状態（応募済み, キャンセル済み）
+      example: "応募済み"
+    applied_at:
+      type: string
+      format: date-time
+      description: 応募日時
+      example: "2024-12-22T10:00:00Z"
+
+ApplicantProfile:
+  type: object
+  properties:
+    uuid:
+      type: string
+      description: 応募者の一意なID
+      example: "applicant-123"
+    first_name:
+      type: string
+      description: 応募者の名前（名）
+      example: "Taro"
+    last_name:
+      type: string
+      description: 応募者の名前（姓）
+      example: "Yamada"
+    email:
+      type: string
+      description: 応募者のメールアドレス
+      example: "taro@example.com"
+    phone:
+      type: string
+      description: 応募者の電話番号
+      example: "080-1234-5678"
+    address:
+      type: string
+      description: 応募者の住所
+      example: "Tokyo, Japan"
+    profile_image_url:
+      type: string
+      description: プロフィール画像のURL
+      example: "https://example.com/images/profile.jpg"
+
+Error:
+  type: object
+  properties:
+    message:
+      type: string
+      example: "無効なリクエストです"

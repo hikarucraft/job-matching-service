@@ -1,0 +1,89 @@
+get:
+  summary: 自分の会社に応募している応募者の一覧を取得する
+  description: |
+    認証された`company_user`が、自分の会社に応募している`applicant`の一覧を取得します。
+    検索や絞り込みも可能です。
+    このリクエストには、JWTを含むCookieを送信する必要があります。
+  parameters:
+    - name: job_id
+      in: query
+      description: 求人のIDで絞り込み
+      required: false
+      schema:
+        type: string
+        example: "job-123"
+    - name: status
+      in: query
+      description: 応募の状態で絞り込み（例：応募済み、拒否）
+      required: false
+      schema:
+        type: string
+        enum: ["applied", "rejected", "interviewed"]
+        example: "applied"
+    - name: limit
+      in: query
+      description: 結果の最大件数
+      required: false
+      schema:
+        type: integer
+        default: 10
+        example: 10
+    - name: offset
+      in: query
+      description: 結果のオフセット
+      required: false
+      schema:
+        type: integer
+        default: 0
+        example: 0
+  responses:
+    '200':
+      description: 応募者の一覧が正常に取得されました
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              applicants:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApplicantProfile'
+              total:
+                type: integer
+                description: 全応募者数
+                example: 50
+          example:
+            applicants:
+              - uuid: "applicant-123"
+                first_name: "Taro"
+                last_name: "Yamada"
+                email: "taro@example.com"
+                phone: "080-1234-5678"
+                address: "Tokyo, Japan"
+                profile_image_url: "https://example.com/images/profile.jpg"
+              - uuid: "applicant-124"
+                first_name: "Jiro"
+                last_name: "Sato"
+                email: "jiro@example.com"
+                phone: "080-9876-5432"
+                address: "Osaka, Japan"
+                profile_image_url: "https://example.com/images/profile2.jpg"
+            total: 50
+    '401':
+      description: 認証されていないユーザー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証に失敗しました。ログインしてください。"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []

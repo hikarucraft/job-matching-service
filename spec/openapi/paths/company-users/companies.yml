@@ -1,0 +1,53 @@
+post:
+  summary: 企業ユーザーが会社を作成
+  description: |
+    企業ユーザー（`company_user`）がログイン後、自分の会社を作成します。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CompanyCreateRequest'
+        example:
+          company_name: "株式会社ABC"
+          profile_image_url: "https://example.com/logo.png"
+          profile_text: "テクノロジー業界のリーディングカンパニーです"
+  responses:
+    '201':
+      description: 会社が作成されました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Company'
+          example:
+            uuid: "1d6f8743-dc4c-47d1-95f1-2ab83246081c"
+            company_name: "株式会社ABC"
+            profile_image_url: "https://example.com/logo.png"
+            profile_text: "テクノロジー業界のリーディングカンパニーです"
+    '400':
+      description: リクエストが無効です
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "会社情報が無効です"
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "権限がありません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []

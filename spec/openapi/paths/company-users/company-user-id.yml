@@ -1,0 +1,118 @@
+patch:
+  summary: 企業ユーザーの情報を編集
+  description: |
+    管理者（`admin_user`）が特定の企業ユーザー（`company_user`）の情報を編集します。
+    このリクエストには認証済みの`admin_user`のJWTを含むCookieが必要です。
+  parameters:
+    - name: company_user_id
+      in: path
+      required: true
+      description: 編集対象の企業ユーザーのUUID
+      schema:
+        type: string
+        example: "c124adff-1234-5678-9101-abcdefabc123"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CompanyUserUpdateRequest'
+        example:
+          email: "new_email@example.com"
+          full_name: "新しい名前"
+  responses:
+    '200':
+      description: 企業ユーザーの情報が正常に更新されました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CompanyUser'
+          example:
+            uuid: "c124adff-1234-5678-9101-abcdefabc123"
+            email: "new_email@example.com"
+            full_name: "新しい名前"
+    '400':
+      description: 無効なリクエスト
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効なリクエストです"
+    '404':
+      description: 企業ユーザーが見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された企業ユーザーが見つかりません"
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "権限がありません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+
+delete:
+  summary: 企業ユーザーの削除
+  description: |
+    管理者（`admin_user`）が特定の企業ユーザー（`company_user`）を削除します。
+    このリクエストには認証済みの`admin_user`のJWTを含むCookieが必要です。
+  parameters:
+    - name: company_user_id
+      in: path
+      required: true
+      description: 削除対象の企業ユーザーのUUID
+      schema:
+        type: string
+        example: "c124adff-1234-5678-9101-abcdefabc123"
+  responses:
+    '204':
+      description: 削除が正常に完了しました（レスポンスボディなし）
+    '400':
+      description: 無効なリクエスト
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効なリクエストです"
+    '404':
+      description: 企業ユーザーが見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された企業ユーザーが見つかりません"
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "権限がありません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []

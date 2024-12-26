@@ -1,0 +1,42 @@
+delete:
+  summary: スカウトをキャンセル
+  description: |
+    認証された`company_user`が、指定されたスカウトをキャンセルします。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  parameters:
+    - name: scout_id
+      in: path
+      required: true
+      description: キャンセルするスカウトのUUID
+      schema:
+        type: string
+        example: "scout-789"
+  responses:
+    '204':
+      description: スカウトが正常にキャンセルされました（レスポンスボディなし）
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証されていません"
+    '404':
+      description: 指定されたスカウトが見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定されたスカウトが見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []

@@ -1,0 +1,97 @@
+patch:
+  summary: 所属する会社情報を編集
+  description: |
+    認証された`company_user`が、自分が所属する会社の情報を編集します。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CompanyUpdateRequest'
+        example:
+          company_name: "新しい会社名"
+          profile_image_url: "https://example.com/new-image.jpg"
+          profile_text: "新しい会社の紹介文"
+  responses:
+    '200':
+      description: 会社情報の編集に成功しました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Company'
+          example:
+            uuid: "company-123"
+            company_name: "新しい会社名"
+            profile_image_url: "https://example.com/new-image.jpg"
+            profile_text: "新しい会社の紹介文"
+    '400':
+      description: 無効なリクエストです
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効なリクエストです"
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証されていません"
+    '404':
+      description: 会社情報が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された会社情報が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+
+delete:
+  summary: 所属する会社を削除
+  description: |
+    認証された`company_user`が、自分が所属する会社を削除します。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  responses:
+    '204':
+      description: 会社が正常に削除されました（レスポンスボディなし）
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証されていません"
+    '404':
+      description: 会社情報が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された会社情報が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+    

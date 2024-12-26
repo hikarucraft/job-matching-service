@@ -1,0 +1,91 @@
+get:
+  summary: スカウト詳細の取得
+  description: |
+    認証された`applicant_user`が、指定されたスカウトの詳細情報を取得します。
+    このリクエストにはJWTを含むCookieが必要です。
+  parameters:
+    - name: scout_id
+      in: path
+      required: true
+      description: 詳細を取得するスカウトのUUID
+      schema:
+        type: string
+        example: "scout-123"
+  responses:
+    '200':
+      description: スカウト詳細の取得に成功しました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Scout'
+          example:
+            uuid: "scout-123"
+            company_id: "company-123"
+            job_id: "job-456"
+            message: "ぜひ一緒に働いていただきたいです！"
+            sent_at: "2024-12-22T10:00:00Z"
+            status: "送信済み"
+    '404':
+      description: スカウトが見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定されたスカウトが見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+
+delete:
+  summary: スカウトを拒否
+  description: |
+    認証された`applicant_user`が、指定されたスカウトを拒否します。
+    このリクエストにはJWTを含むCookieが必要です。
+  parameters:
+    - name: scout_id
+      in: path
+      required: true
+      description: 拒否するスカウトのUUID
+      schema:
+        type: string
+        example: "scout-123"
+  responses:
+    '200':
+      description: スカウトが正常に拒否されました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Scout'
+          example:
+            uuid: "scout-123"
+            company_id: "company-123"
+            job_id: "job-456"
+            message: "ぜひ一緒に働いていただきたいです！"
+            sent_at: "2024-12-22T10:00:00Z"
+            status: "拒否"
+    '404':
+      description: スカウトが見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定されたスカウトが見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []

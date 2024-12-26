@@ -1,0 +1,41 @@
+get:
+  summary: 企業詳細の取得
+  description: |
+    指定された企業の詳細情報を取得します。
+    このリクエストには認証は不要です。
+  parameters:
+    - name: company_id
+      in: path
+      required: true
+      description: 詳細を取得する企業のUUID
+      schema:
+        type: string
+        example: "company-123"
+  responses:
+    '200':
+      description: 企業詳細の取得に成功しました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Company'
+          example:
+            uuid: "company-123"
+            company_name: "株式会社サンプル"
+            profile_image_url: "https://example.com/image.jpg"
+            profile_text: "我々は革新的な技術を提供しています。"
+    '404':
+      description: 企業が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された企業が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"

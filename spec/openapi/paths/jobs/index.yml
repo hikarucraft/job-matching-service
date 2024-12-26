@@ -1,0 +1,61 @@
+get:
+  summary: 求人一覧の取得
+  description: |
+    公開されている求人一覧を取得します。
+    クエリパラメータを使用して検索条件を指定することができます。
+    このリクエストには認証は不要です。
+  parameters:
+    - name: job_name
+      in: query
+      required: false
+      description: 求人名でフィルタリング
+      schema:
+        type: string
+        example: "エンジニア"
+    - name: tag
+      in: query
+      required: false
+      description: 求人のタグでフィルタリング
+      schema:
+        type: string
+        example: "リモート"
+    - name: limit
+      in: query
+      required: false
+      description: 取得するデータの上限
+      schema:
+        type: integer
+        example: 10
+    - name: offset
+      in: query
+      required: false
+      description: 取得を開始する位置
+      schema:
+        type: integer
+        example: 0
+  responses:
+    '200':
+      description: 求人一覧の取得に成功しました
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Job'
+          example:
+            - uuid: "job-123"
+              job_name: "フロントエンドエンジニア"
+              description: "フロントエンド開発に特化したエンジニアを募集しています。"
+              tag: "リモート, JavaScript"
+            - uuid: "job-456"
+              job_name: "バックエンドエンジニア"
+              description: "スケーラブルなバックエンド開発を担当します。"
+              tag: "Python, AWS"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"

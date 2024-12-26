@@ -1,0 +1,163 @@
+get:
+  summary: 自分の会社に属する求人の詳細を取得
+  description: |
+    認証された`company_user`が、自分の会社に属する特定の求人（`job`）の詳細を取得します。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  parameters:
+    - name: job_id
+      in: path
+      required: true
+      description: 詳細を取得する求人のUUID
+      schema:
+        type: string
+        example: "job-123"
+  responses:
+    '200':
+      description: 求人の詳細取得に成功しました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Job'
+          example:
+            uuid: "job-123"
+            job_name: "ソフトウェアエンジニア"
+            description: "フルスタックエンジニアを募集しています"
+            tag: ["エンジニア", "フルスタック"]
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証されていません"
+    '404':
+      description: 求人が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された求人が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+patch:
+  summary: 自分の会社の求人を編集
+  description: |
+    認証された`company_user`が、自分の会社に属する特定の求人を編集します。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  parameters:
+    - name: job_id
+      in: path
+      required: true
+      description: 編集する求人のUUID
+      schema:
+        type: string
+        example: "job-123"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/JobUpdateRequest'
+        example:
+          job_name: "更新後のバックエンドエンジニア"
+          description: "新しいスキル要件を追加しました"
+          tag: ["エンジニア", "バックエンド", "更新"]
+  responses:
+    '200':
+      description: 求人の編集に成功しました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Job'
+          example:
+            uuid: "job-123"
+            job_name: "更新後のバックエンドエンジニア"
+            description: "新しいスキル要件を追加しました"
+            tag: ["エンジニア", "バックエンド", "更新"]
+    '400':
+      description: 無効なリクエストです
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効なリクエストです"
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証されていません"
+    '404':
+      description: 求人が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された求人が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+
+delete:
+  summary: 自分の会社の求人を削除
+  description: |
+    認証された`company_user`が、自分の会社に属する特定の求人を削除します。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  parameters:
+    - name: job_id
+      in: path
+      required: true
+      description: 削除する求人のUUID
+      schema:
+        type: string
+        example: "job-123"
+  responses:
+    '204':
+      description: 求人が正常に削除されました（レスポンスボディなし）
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証されていません"
+    '404':
+      description: 求人が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された求人が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []

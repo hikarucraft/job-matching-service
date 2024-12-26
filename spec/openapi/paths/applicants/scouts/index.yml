@@ -1,0 +1,75 @@
+get:
+  summary: 受け取ったスカウト一覧の取得
+  description: |
+    認証された`applicant_user`が、受け取ったスカウト一覧を取得します。
+    クエリパラメータを使用して検索条件を指定することができます。
+    このリクエストにはJWTを含むCookieが必要です。
+  parameters:
+    - name: company_name
+      in: query
+      required: false
+      description: 企業名でフィルタリング
+      schema:
+        type: string
+        example: "株式会社サンプル"
+    - name: job_name
+      in: query
+      required: false
+      description: 求人名でフィルタリング
+      schema:
+        type: string
+        example: "フロントエンドエンジニア"
+    - name: status
+      in: query
+      required: false
+      description: スカウトのステータスでフィルタリング（例 "送信済み", "拒否"）
+      schema:
+        type: string
+        example: "送信済み"
+    - name: limit
+      in: query
+      required: false
+      description: 取得するデータの上限
+      schema:
+        type: integer
+        example: 10
+    - name: offset
+      in: query
+      required: false
+      description: 取得を開始する位置
+      schema:
+        type: integer
+        example: 0
+  responses:
+    '200':
+      description: スカウト一覧の取得に成功しました
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Scout'
+          example:
+            - uuid: "scout-123"
+              company_id: "company-123"
+              job_id: "job-456"
+              message: "ぜひ一緒に働いていただきたいです！"
+              sent_at: "2024-12-22T10:00:00Z"
+              status: "送信済み"
+            - uuid: "scout-456"
+              company_id: "company-456"
+              job_id: "job-789"
+              message: "あなたのスキルを活かせるポジションです！"
+              sent_at: "2024-12-21T09:00:00Z"
+              status: "拒否"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+

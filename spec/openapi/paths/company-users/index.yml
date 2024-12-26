@@ -1,0 +1,49 @@
+post:
+  summary: 企業ユーザーの登録
+  description: |
+    企業ユーザー（`company_user`）が管理者から送られた招待URLを使って登録を行います。
+    URLには一時的に有効なトークンが含まれています。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CompanyUserRegister'
+        example:
+          invite_token: "temporary-invite-token"
+          email: "company_user@example.com"
+          password: "password123"
+          full_name: "企業ユーザー 太郎"
+  responses:
+    '201':
+      description: 登録が成功しました
+      headers:
+        Set-Cookie:
+          description: JWTがCookieに保存されます
+          schema:
+            type: string
+            example: "jwt_token_example"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CompanyUser'
+          example:
+            uuid: "c124adff-1234-5678-9101-abcdefabc123"
+            email: "company_user@example.com"
+            full_name: "企業ユーザー 太郎"
+    '400':
+      description: 無効な招待URLまたはリクエスト
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効な招待トークンまたはリクエストです"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"

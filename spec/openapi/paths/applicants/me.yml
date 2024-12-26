@@ -1,0 +1,99 @@
+get:
+  summary: 自分のプロフィールを閲覧する
+  description: |
+    認証された`applicant_user`が自分のプロフィールを閲覧します。
+    このリクエストには、JWTを含むCookieを送信する必要があります。
+  responses:
+    '200':
+      description: プロフィールが正常に取得されました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApplicantProfile'
+          example:
+            uuid: "applicant-123"
+            first_name: "Taro"
+            last_name: "Yamada"
+            email: "taro@example.com"
+            phone: "080-1234-5678"
+            address: "Tokyo, Japan"
+            profile_image_url: "https://example.com/images/profile.jpg"
+    '401':
+      description: 認証されていないユーザー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証に失敗しました。ログインしてください。"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+
+put:
+  summary: 自分のプロフィールを編集する
+  description: |
+    認証された`applicant_user`が自分のプロフィールを編集します。
+    このリクエストには、JWTを含むCookieを送信する必要があります。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApplicantProfile'
+        example:
+          first_name: "Taro"
+          last_name: "Yamada"
+          email: "newemail@example.com"
+          phone: "080-8765-4321"
+          address: "Osaka, Japan"
+          profile_image_url: "https://example.com/images/new_profile.jpg"
+  responses:
+    '200':
+      description: プロフィールが正常に更新されました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApplicantProfile'
+          example:
+            uuid: "applicant-123"
+            first_name: "Taro"
+            last_name: "Yamada"
+            email: "newemail@example.com"
+            phone: "080-8765-4321"
+            address: "Osaka, Japan"
+            profile_image_url: "https://example.com/images/new_profile.jpg"
+    '400':
+      description: リクエストデータが無効です
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効な入力データがあります。"
+    '401':
+      description: 認証されていないユーザー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証に失敗しました。ログインしてください。"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+      

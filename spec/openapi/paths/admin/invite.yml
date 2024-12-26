@@ -1,0 +1,48 @@
+post:
+  summary: 企業ユーザーの招待URLを発行
+  description: |
+    管理者（`admin_user`）が企業ユーザー（`company_user`）に登録URLを発行します。URLには一時的に有効なトークンが含まれています。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CompanyUserInviteRequest'
+        example:
+          email: "company_user@example.com"
+  responses:
+    '200':
+      description: 招待URLが正常に発行されました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CompanyUserInvite'
+          example:
+            invite_url: "https://example.com/invite?token=temporary-invite-token"
+    '400':
+      description: リクエストが無効です
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効なリクエストです"
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "権限がありません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []

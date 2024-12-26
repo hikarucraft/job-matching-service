@@ -1,0 +1,66 @@
+openapi: 3.0.0
+info:
+  title: Jobber API
+  description: Jobber API
+  version: 0.1.0
+
+paths:
+  /register:
+    $ref: "paths/applicants/register.yml"
+
+  /login:
+    $ref: "paths/applicants/login.yml"
+
+  /admin/invite:
+    $ref: "paths/admin/invite.yml"
+    
+  /company-users:
+    $ref: "paths/company-users/index.yml"
+    
+  /company-users/{company-user-id}:
+    $ref: "paths/company-users/company-user-id.yml"
+    
+  /companies/jobs:
+    $ref: "paths/companies/jobs/index.yml"
+    
+  /companies/jobs/{job-id}:
+    $ref: "paths/companies/jobs/job-id.yml"
+    
+  /companies/me:
+    $ref: "paths/companies/me.yml"
+    
+  /companies/scouts:
+    $ref: "paths/companies/scouts/index.yml"
+    
+  /companies/scouts/{scout-id}:
+    $ref: "paths/companies/scouts/scout-id.yml"
+    
+  /jobs:
+    $ref: "paths/jobs/index.yml"
+    
+  /jobs/{job-id}:
+    $ref: "paths/jobs/job-id.yml"
+    
+  /companies:
+    $ref: "paths/companies/index.yml"
+    
+  /companies/{company-id}:
+    $ref: "paths/companies/company-id.yml"
+    
+  /applicants/scouts:
+    $ref: "paths/applicants/scouts.yml"
+    
+  /applicants/scouts/{scout-id}:
+    $ref: "paths/applicants/scouts/scout-id.yml"
+       
+  /applicants/jobs/{job-id}:
+    $ref: "paths/applicants/jobs/job-id.yml"
+  
+  /applicants/me:
+    $ref: "paths/applicants/me.yml"
+    
+  /applicants:
+    $ref: "paths/applicants/index.yml"
+ 
+  /applicants/{applicant-id}:
+    $ref: "paths/applicants/applicant-id.yml"

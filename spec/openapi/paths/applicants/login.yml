@@ -1,0 +1,45 @@
+post:
+  summary: 応募者のログイン
+  description: 応募者がログインするためのエンドポイントです。ログインが成功すると、JWTをCookieに保存します。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApplicantLogin'
+        example:
+          email: "applicant@example.com"
+          password: "password123"
+  responses:
+    '200':
+      description: ログインが成功しました
+      headers:
+        Set-Cookie:
+          description: JWTがCookieに保存されます
+          schema:
+            type: string
+            example: "jwt_token_example"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Applicant'
+          example:
+            uuid: "5a8c3b1a-24d2-49e5-a4ab-cf25c98eeb47"
+            email: "applicant@example.com"
+            full_name: "応募者 太郎"
+    '400':
+      description: メールアドレスまたはパスワードが無効です
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効なメールアドレスまたはパスワードです"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"

@@ -1,0 +1,158 @@
+get:
+  summary: 企業一覧の取得
+  description: |
+    公開されている企業一覧を取得します。
+    クエリパラメータを使用して検索条件を指定することができます。
+    このリクエストには認証は不要です。
+  parameters:
+    - name: company_name
+      in: query
+      required: false
+      description: 会社名でフィルタリング
+      schema:
+        type: string
+        example: "株式会社サンプル"
+    - name: limit
+      in: query
+      required: false
+      description: 取得するデータの上限
+      schema:
+        type: integer
+        example: 10
+    - name: offset
+      in: query
+      required: false
+      description: 取得を開始する位置
+      schema:
+        type: integer
+        example: 0
+  responses:
+    '200':
+      description: 企業一覧の取得に成功しました
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Company'
+          example:
+            - uuid: "company-123"
+              company_name: "株式会社サンプル"
+              profile_image_url: "https://example.com/image.jpg"
+              profile_text: "我々は革新的な技術を提供しています。"
+            - uuid: "company-456"
+              company_name: "Tech Corp"
+              profile_image_url: "https://example.com/techcorp.jpg"
+              profile_text: "次世代のソリューションを開発しています。"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+
+post:
+  summary: 企業ユーザーが会社を作成
+  description: |
+    企業ユーザー（`company_user`）がログイン後、自分の会社を作成します。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CompanyCreateRequest'
+        example:
+          company_name: "株式会社ABC"
+          profile_image_url: "https://example.com/logo.png"
+          profile_text: "テクノロジー業界のリーディングカンパニーです"
+  responses:
+    '201':
+      description: 会社が作成されました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Company'
+          example:
+            uuid: "1d6f8743-dc4c-47d1-95f1-2ab83246081c"
+            company_name: "株式会社ABC"
+            profile_image_url: "https://example.com/logo.png"
+            profile_text: "テクノロジー業界のリーディングカンパニーです"
+    '400':
+      description: リクエストが無効です
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "会社情報が無効です"
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "権限がありません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+    
+post:
+  summary: 企業ユーザーの登録
+  description: |
+    企業ユーザー（`company_user`）が管理者から送られた招待URLを使って登録を行います。
+    URLには一時的に有効なトークンが含まれています。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CompanyUserRegister'
+        example:
+          invite_token: "temporary-invite-token"
+          email: "company_user@example.com"
+          password: "password123"
+          full_name: "企業ユーザー 太郎"
+  responses:
+    '201':
+      description: 登録が成功しました
+      headers:
+        Set-Cookie:
+          description: JWTがCookieに保存されます
+          schema:
+            type: string
+            example: "jwt_token_example"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CompanyUser'
+          example:
+            uuid: "c124adff-1234-5678-9101-abcdefabc123"
+            email: "company_user@example.com"
+            full_name: "企業ユーザー 太郎"
+    '400':
+      description: 無効な招待URLまたはリクエスト
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効な招待トークンまたはリクエストです"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"

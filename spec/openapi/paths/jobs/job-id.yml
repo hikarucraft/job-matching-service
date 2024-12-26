@@ -1,0 +1,41 @@
+get:
+  summary: 求人詳細の取得
+  description: |
+    指定された求人の詳細情報を取得します。
+    このリクエストには認証は不要です。
+  parameters:
+    - name: job_id
+      in: path
+      required: true
+      description: 詳細を取得する求人のUUID
+      schema:
+        type: string
+        example: "job-123"
+  responses:
+    '200':
+      description: 求人詳細の取得に成功しました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Job'
+          example:
+            uuid: "job-123"
+            job_name: "フロントエンドエンジニア"
+            description: "フロントエンド開発に特化したエンジニアを募集しています。"
+            tag: "リモート, JavaScript"
+    '404':
+      description: 求人が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された求人が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"

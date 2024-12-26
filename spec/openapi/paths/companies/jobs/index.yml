@@ -1,0 +1,95 @@
+get:
+  summary: 自分の会社に属する求人一覧を取得
+  description: |
+    認証された`company_user`が、自分の会社に属するすべての求人（`jobs`）を取得します。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  responses:
+    '200':
+      description: 求人一覧の取得に成功しました
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Job'
+          example:
+            - uuid: "job-123"
+              job_name: "ソフトウェアエンジニア"
+              description: "フルスタックエンジニアを募集しています"
+              tag: ["エンジニア", "フルスタック"]
+            - uuid: "job-456"
+              job_name: "プロダクトマネージャー"
+              description: "プロダクトの戦略を立案できる方を募集"
+              tag: ["マネジメント", "プロダクト"]
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証されていません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+post:
+  summary: 自分の会社に新しい求人を作成
+  description: |
+    認証された`company_user`が、自分の会社に新しい求人を作成します。
+    このリクエストには認証済みのJWTを含むCookieが必要です。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/JobCreateRequest'
+        example:
+          job_name: "バックエンドエンジニア"
+          description: "スケーラブルなシステム設計に携わる"
+          tag: ["エンジニア", "バックエンド"]
+  responses:
+    '201':
+      description: 求人の作成に成功しました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Job'
+          example:
+            uuid: "job-789"
+            job_name: "バックエンドエンジニア"
+            description: "スケーラブルなシステム設計に携わる"
+            tag: ["エンジニア", "バックエンド"]
+    '400':
+      description: 無効なリクエストです
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "無効なリクエストです"
+    '403':
+      description: 認証されていない、または権限がありません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証されていません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+

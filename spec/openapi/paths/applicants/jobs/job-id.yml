@@ -1,0 +1,89 @@
+post:
+  summary: 求人に応募する
+  description: |
+    認証された`applicant_user`が、指定された求人に応募します。
+    このリクエストには、JWTを含むCookieを送信する必要があります。
+  parameters:
+    - name: job_id
+      in: path
+      required: true
+      description: 応募する求人のUUID
+      schema:
+        type: string
+        example: "job-123"
+  responses:
+    '200':
+      description: 応募が正常に完了しました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Application'
+          example:
+            uuid: "application-123"
+            job_id: "job-123"
+            applicant_id: "applicant-123"
+            status: "応募済み"
+            applied_at: "2024-12-22T10:00:00Z"
+    '404':
+      description: 求人が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された求人が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+
+delete:
+  summary: 求人への応募をキャンセルする
+  description: |
+    認証された`applicant_user`が、指定された求人への応募をキャンセルします。
+    このリクエストには、JWTを含むCookieを送信する必要があります。
+  parameters:
+    - name: job_id
+      in: path
+      required: true
+      description: キャンセルする求人のUUID
+      schema:
+        type: string
+        example: "job-123"
+  responses:
+    '200':
+      description: 応募が正常にキャンセルされました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Application'
+          example:
+            uuid: "application-123"
+            job_id: "job-123"
+            applicant_id: "applicant-123"
+            status: "キャンセル済み"
+            applied_at: "2024-12-22T10:00:00Z"
+    '404':
+      description: 求人が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された求人が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []

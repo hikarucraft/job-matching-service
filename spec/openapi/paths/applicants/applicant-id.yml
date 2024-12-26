@@ -1,0 +1,55 @@
+get:
+  summary: 応募者のプロフィールを表示する
+  description: |
+    認証された`company_user`が、特定の`applicant`のプロフィールを表示します。
+    このリクエストには、JWTを含むCookieを送信する必要があります。
+  parameters:
+    - name: applicant_id
+      in: path
+      required: true
+      description: 応募者のUUID
+      schema:
+        type: string
+        example: "applicant-123"
+  responses:
+    '200':
+      description: 応募者のプロフィールが正常に取得されました
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApplicantProfile'
+          example:
+            uuid: "applicant-123"
+            first_name: "Taro"
+            last_name: "Yamada"
+            email: "taro@example.com"
+            phone: "080-1234-5678"
+            address: "Tokyo, Japan"
+            profile_image_url: "https://example.com/images/profile.jpg"
+    '401':
+      description: 認証されていないユーザー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "認証に失敗しました。ログインしてください。"
+    '404':
+      description: 応募者が見つかりません
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "指定された応募者が見つかりません"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
+  security:
+    - cookieAuth: []
+

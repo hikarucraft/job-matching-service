@@ -1,0 +1,46 @@
+post:
+  summary: 応募者のサインアップ
+  description: 応募者が新規登録するためのエンドポイントです。サインアップが成功すると、JWTをCookieに設定します。
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ApplicantSignup'
+        example:
+          email: "applicant@example.com"
+          password: "password123"
+          full_name: "応募者 太郎"
+  responses:
+    '201':
+      description: サインアップが成功しました
+      headers:
+        Set-Cookie:
+          description: JWTがCookieに保存されます
+          schema:
+            type: string
+            example: "jwt_token_example"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Applicant'
+          example:
+            uuid: "5a8c3b1a-24d2-49e5-a4ab-cf25c98eeb47"
+            email: "applicant@example.com"
+            full_name: "応募者 太郎"
+    '400':
+      description: リクエストが無効です
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "入力された情報が無効です"
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "サーバー内部でエラーが発生しました"
